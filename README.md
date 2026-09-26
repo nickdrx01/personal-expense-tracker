@@ -1,38 +1,76 @@
 # Personal Expense Tracker 💰
 
-A simple personal expense tracker built with **Python and PostgreSQL**.
-I built this project step by step to learn how Python applications work with databases, how to analyze stored data, and how to add basic security and AI-style features.
+A personal expense tracker built with **Python and PostgreSQL**.
 
-## 🚀 What can it do?
+I built this project step by step to improve my understanding of Python, SQL, databases, data analysis, security, testing, and Git/GitHub. The idea was to start with a simple expense tracker and gradually add more useful features.
 
-* Add, view, update, and delete expenses
-* Search for specific expenses
-* Calculate spending summaries
-* Analyze spending by category
-* Track spending by payment method
-* Show daily and monthly spending
+## 🚀 Features
+
+### Expense Management
+
+* Add expenses
+* View expenses
+* Update expenses
+* Delete expenses
+* Search expenses
+* View spending summaries
+
+### 📊 Spending Analysis
+
+* Category-wise spending
+* Payment-method analysis
+* Daily spending
+* Monthly spending
+* Category percentage analysis
+* Top spending categories
+* Highest and lowest expenses
+* Spending insights
+
+### 🔍 Spending Patterns
+
 * Find recurring expenses
-* Detect small expenses and possible money leaks
-* Identify spending patterns
-* Generate rule-based financial warnings
-* Enter expenses using simple natural language
-* Ask basic questions about spending using natural language
-* Generate spending insights and suggestions
-* Store data permanently using PostgreSQL
-* Validate user input
-* Protect against basic SQL injection
-* Handle database errors
-* Keep database credentials outside the source code
-* Run basic automated database tests
+* Detect small expenses
+* Identify spending increases
+* Find high-spending days
+* Track category trends
+* Analyze payment patterns
+* Detect possible money leaks
+* Generate rule-based insights
 
-## 🛠️ Technologies Used
+### 🤖 Smart Features
 
-* **Python**
-* **PostgreSQL**
-* **psycopg2**
-* **python-dotenv**
-* **pytest**
-* **Git & GitHub**
+I also added some simple AI-style features to make the project more useful.
+
+* Smart category suggestions
+* Natural-language expense input
+* Natural-language spending queries
+* Spending analysis
+* Smart warnings
+* Monthly reports
+* Personalized suggestions
+* Expense assistant
+
+> **Note:** These features are currently based on Python logic, keywords, and SQL queries. They do not use a machine-learning model or external LLM API yet.
+
+### 🔐 Security & Testing
+
+* User input validation
+* Database error handling
+* Parameterized SQL queries
+* Basic SQL injection protection
+* Database credentials stored in `.env`
+* `.env` protected using `.gitignore`
+* Automated database tests using `pytest`
+
+## 🛠️ Technologies
+
+* Python
+* PostgreSQL
+* psycopg2
+* python-dotenv
+* pytest
+* Git
+* GitHub
 
 ## 📁 Project Structure
 
@@ -45,33 +83,52 @@ personal-expense-tracker/
 ├── update_expense.py
 ├── delete_expense.py
 ├── search_expense.py
-├── expense_summary.py
+├── create_table.py
+├── insert_sample_data.py
+├── database.sql
+├── requirements.txt
 │
-├── category_summary.py
-├── payment_summary.py
-├── daily_summary.py
-├── monthly_summary.py
-├── category_percentage.py
-├── top_categories.py
+├── features/
+│   ├── ai/
+│   │   ├── smart_category.py
+│   │   ├── natural_expense.py
+│   │   ├── natural_query.py
+│   │   ├── ai_spending_analysis.py
+│   │   ├── smart_warnings.py
+│   │   ├── monthly_ai_report.py
+│   │   ├── personalized_suggestions.py
+│   │   └── expense_assistant.py
+│   │
+│   ├── analytics/
+│   │   ├── category_summary.py
+│   │   ├── payment_summary.py
+│   │   ├── daily_summary.py
+│   │   ├── monthly_summary.py
+│   │   ├── category_percentage.py
+│   │   ├── top_categories.py
+│   │   ├── expense_summary.py
+│   │   ├── high_low_expense.py
+│   │   └── spending_insights.py
+│   │
+│   ├── patterns/
+│   │   ├── category_trends.py
+│   │   ├── high_spending_days.py
+│   │   ├── money_leak.py
+│   │   ├── payment_patterns.py
+│   │   ├── recurring_expenses.py
+│   │   ├── rule_based_insights.py
+│   │   ├── small_expenses.py
+│   │   └── spending_increase.py
+│   │
+│   └── security/
+│       ├── input_validation.py
+│       ├── database_error_handling.py
+│       ├── secure_connection.py
+│       └── sql_injection_protection.py
 │
-├── phase 7/
-│   ├── smart_category.py
-│   ├── natural_expense.py
-│   ├── natural_query.py
-│   ├── ai_spending_analysis.py
-│   ├── smart_warnings.py
-│   ├── monthly_ai_report.py
-│   ├── personalized_suggestions.py
-│   └── expense_assistant.py
-│
-├── phase 8/
-│   ├── input_validation.py
-│   ├── database_error_handling.py
-│   ├── sql_injection_protection.py
-│   ├── secure_connection.py
+├── tests/
 │   └── test_database.py
 │
-├── database.sql
 ├── .gitignore
 └── README.md
 ```
@@ -93,14 +150,14 @@ python -m venv .venv
 
 For Windows:
 
-```bash
+```powershell
 .venv\Scripts\activate
 ```
 
-### 3. Install the required packages
+### 3. Install the dependencies
 
 ```bash
-pip install psycopg2-binary python-dotenv pytest
+pip install -r requirements.txt
 ```
 
 ### 4. Set up PostgreSQL
@@ -111,7 +168,7 @@ Create a PostgreSQL database named:
 expense_tracker
 ```
 
-Then create a `.env` file in the project folder:
+Create a `.env` file in the project folder:
 
 ```text
 DB_HOST=localhost
@@ -125,35 +182,21 @@ Replace `YOUR_POSTGRES_PASSWORD` with your local PostgreSQL password.
 
 > **Important:** Never upload the `.env` file to GitHub.
 
-### 5. Create the expenses table
-
-Run:
+### 5. Create the database table
 
 ```bash
 python create_table.py
 ```
 
-### 6. Start the application
+### 6. Run the application
 
 ```bash
 python main.py
 ```
 
-## 🔐 Security
-
-While building the project, I also focused on some basic security practices:
-
-* Parameterized SQL queries
-* User input validation
-* Database error handling
-* Database credentials stored in environment variables
-* `.env` excluded using `.gitignore`
-* Basic SQL injection protection
-* Automated database tests
-
 ## 🧪 Testing
 
-The project includes basic tests using **pytest**.
+The project uses **pytest** for basic automated testing.
 
 Run:
 
@@ -161,44 +204,67 @@ Run:
 pytest
 ```
 
-The current tests check:
+Current test result:
+
+```text
+2 passed
+```
+
+The tests currently check:
 
 * PostgreSQL database connection
-* Existence of the `expenses` table
+* `expenses` table existence
 
-## 📚 How I Built It
+## 🔒 Security
 
-The project was developed in different stages instead of building everything at once:
+Security was also considered while building the project.
+
+The application uses:
+
+* Parameterized SQL queries
+* Input validation
+* Database error handling
+* Environment variables for credentials
+* `.gitignore` to protect `.env`
+* Basic SQL injection protection
+
+Real database passwords and other secrets should never be committed to GitHub.
+
+## 📚 Development Journey
+
+I built the project gradually instead of trying to create everything at once.
 
 1. Python fundamentals
 2. PostgreSQL setup
-3. Connecting Python with PostgreSQL
-4. CRUD operations and search
+3. Python + PostgreSQL connection
+4. CRUD operations
 5. Spending analytics
 6. Spending pattern detection
-7. AI-style features
+7. Smart / AI-style features
 8. Testing and security
 9. Git and GitHub
 
-This approach helped me understand each part before moving to the next one.
+Building it this way helped me understand how different parts of a real application fit together.
 
 ## 🔮 Future Improvements
 
-Some things I would like to add later:
+Some features I would like to work on next:
 
-* Web-based interface
-* Interactive spending dashboard
-* Better natural-language processing
-* Machine-learning based spending prediction
+* Interactive dashboard
+* Data visualization
 * Budget management
 * Expense forecasting
+* Machine-learning based spending prediction
+* LLM-powered expense assistant
 * User authentication
-* Support for multiple users
+* Multiple-user support
+* REST API
+* Cloud deployment
 
 ## 👨‍💻 About
 
-**Nikhil Gawade**
+Built by **Nikhil Gawade** as a practical project to strengthen skills in:
 
-B.Tech Computer Science Engineering Student
+**Python • PostgreSQL • SQL • Data Analytics • Cybersecurity • Git/GitHub**.
 
-Interested in **Cybersecurity, Cloud Computing, Python, and Backend Development**.
+This project is part of my journey of learning by building real projects and improving them step by step.
