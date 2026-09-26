@@ -1,1 +1,0 @@
-open("C:\Users\nikhi\Desktop\main.py" , "r")
