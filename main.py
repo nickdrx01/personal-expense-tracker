@@ -1,7 +1,17 @@
+import os
+import psycopg2
+from dotenv import load_dotenv
 
-from datetime import datetime
+load_dotenv()
 
-expenses = []
+def get_connection():
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST"),
+        database=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        port=os.getenv("DB_PORT")
+    )
 
 
 def add_expense():
@@ -14,228 +24,265 @@ def add_expense():
             print("Amount must be greater than 0.")
             return
 
+        category = input("Category: ").strip()
+        description = input("Description: ").strip()
+        payment_method = input("Payment Method: ").strip()
+
+        if not category or not description or not payment_method:
+            print("Fields cannot be empty.")
+            return
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        query = """
+        INSERT INTO expenses
+        (amount, category, description, payment_method)
+        VALUES (%s, %s, %s, %s);
+        """
+
+        cursor.execute(
+            query,
+            (amount, category, description, payment_method)
+        )
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        print("Expense added successfully!")
+
     except ValueError:
         print("Please enter a valid amount.")
-        return
 
-    category = input("Category: ").strip()
-    description = input("Description: ").strip()
-    payment_method = input("Payment Method: ").strip()
-
-    if not category or not description or not payment_method:
-        print("Category, description and payment method cannot be empty.")
-        return
-
-    expense = {
-        "id": len(expenses) + 1,
-        "amount": amount,
-        "category": category,
-        "description": description,
-        "date": datetime.now().strftime("%d-%m-%Y"),
-        "payment_method": payment_method
-    }
-
-    expenses.append(expense)
-
-    print("Expense added successfully!")
+    except psycopg2.Error as e:
+        print("Database error:", e)
 
 
 def view_expenses():
     print("\n--- All Expenses ---")
 
-    if not expenses:
-        print("No expenses found.")
-        return
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    print("-" * 80)
-    print(
-        f"{'ID':<5}"
-        f"{'Amount':<12}"
-        f"{'Category':<15}"
-        f"{'Description':<20}"
-        f"{'Date':<15}"
-        f"{'Payment':<10}"
-    )
-    print("-" * 80)
+        cursor.execute("""
+            SELECT id, amount, category, description, date, payment_method
+            FROM expenses
+            ORDER BY id;
+        """)
 
-    for expense in expenses:
-        print(
-            f"{expense['id']:<5}"
-            f"₹{expense['amount']:<11.2f}"
-            f"{expense['category']:<15}"
-            f"{expense['description']:<20}"
-            f"{expense['date']:<15}"
-            f"{expense['payment_method']:<10}"
-        )
+        rows = cursor.fetchall()
 
-    print("-" * 80)
+        if not rows:
+            print("No expenses found.")
+        else:
+            print("-" * 90)
+            print(
+                f"{'ID':<5}"
+                f"{'Amount':<12}"
+                f"{'Category':<15}"
+                f"{'Description':<20}"
+                f"{'Date':<15}"
+                f"{'Payment':<10}"
+            )
+            print("-" * 90)
+
+            for row in rows:
+                print(
+                    f"{row[0]:<5}"
+                    f"₹{row[1]:<11.2f}"
+                    f"{row[2]:<15}"
+                    f"{row[3]:<20}"
+                    f"{str(row[4]):<15}"
+                    f"{row[5]:<10}"
+                )
+
+            print("-" * 90)
+
+        cursor.close()
+        conn.close()
+
+    except psycopg2.Error as e:
+        print("Database error:", e)
 
 
 def update_expense():
     print("\n--- Update Expense ---")
 
-    if not expenses:
-        print("No expenses found.")
-        return
-
     try:
         expense_id = int(input("Enter Expense ID: "))
-    except ValueError:
-        print("Please enter a valid Expense ID.")
-        return
 
-    for expense in expenses:
-        if expense["id"] == expense_id:
+        print("\n1. Amount")
+        print("2. Category")
+        print("3. Description")
+        print("4. Payment Method")
 
-            print("\nWhat do you want to update?")
-            print("1. Amount")
-            print("2. Category")
-            print("3. Description")
-            print("4. Payment Method")
+        choice = input("Enter choice: ")
 
-            choice = input("Enter choice: ")
+        conn = get_connection()
+        cursor = conn.cursor()
 
-            if choice == "1":
-                try:
-                    new_amount = float(input("New amount: "))
+        if choice == "1":
+            amount = float(input("New amount: "))
 
-                    if new_amount <= 0:
-                        print("Amount must be greater than 0.")
-                        return
-
-                    expense["amount"] = new_amount
-
-                except ValueError:
-                    print("Please enter a valid amount.")
-                    return
-
-            elif choice == "2":
-                new_category = input("New category: ").strip()
-
-                if not new_category:
-                    print("Category cannot be empty.")
-                    return
-
-                expense["category"] = new_category
-
-            elif choice == "3":
-                new_description = input("New description: ").strip()
-
-                if not new_description:
-                    print("Description cannot be empty.")
-                    return
-
-                expense["description"] = new_description
-
-            elif choice == "4":
-                new_payment_method = input("New payment method: ").strip()
-
-                if not new_payment_method:
-                    print("Payment method cannot be empty.")
-                    return
-
-                expense["payment_method"] = new_payment_method
-
-            else:
-                print("Invalid choice.")
+            if amount <= 0:
+                print("Amount must be greater than 0.")
                 return
 
-            print("Expense updated successfully!")
+            cursor.execute(
+                "UPDATE expenses SET amount = %s WHERE id = %s",
+                (amount, expense_id)
+            )
+
+        elif choice == "2":
+            category = input("New category: ").strip()
+
+            cursor.execute(
+                "UPDATE expenses SET category = %s WHERE id = %s",
+                (category, expense_id)
+            )
+
+        elif choice == "3":
+            description = input("New description: ").strip()
+
+            cursor.execute(
+                "UPDATE expenses SET description = %s WHERE id = %s",
+                (description, expense_id)
+            )
+
+        elif choice == "4":
+            payment = input("New payment method: ").strip()
+
+            cursor.execute(
+                "UPDATE expenses SET payment_method = %s WHERE id = %s",
+                (payment, expense_id)
+            )
+
+        else:
+            print("Invalid choice.")
             return
 
-    print("Expense ID not found.")
+        if cursor.rowcount == 0:
+            print("Expense ID not found.")
+        else:
+            conn.commit()
+            print("Expense updated successfully!")
+
+        cursor.close()
+        conn.close()
+
+    except ValueError:
+        print("Please enter valid input.")
+
+    except psycopg2.Error as e:
+        print("Database error:", e)
 
 
 def delete_expense():
     print("\n--- Delete Expense ---")
 
-    if not expenses:
-        print("No expenses found.")
-        return
-
     try:
         expense_id = int(input("Enter Expense ID: "))
-    except ValueError:
-        print("Please enter a valid Expense ID.")
-        return
 
-    for expense in expenses:
-        if expense["id"] == expense_id:
-            expenses.remove(expense)
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "DELETE FROM expenses WHERE id = %s",
+            (expense_id,)
+        )
+
+        if cursor.rowcount == 0:
+            print("Expense ID not found.")
+        else:
+            conn.commit()
             print("Expense deleted successfully!")
-            return
 
-    print("Expense ID not found.")
+        cursor.close()
+        conn.close()
+
+    except ValueError:
+        print("Please enter a valid ID.")
+
+    except psycopg2.Error as e:
+        print("Database error:", e)
 
 
 def search_expense():
     print("\n--- Search Expense ---")
 
-    if not expenses:
-        print("No expenses found.")
-        return
-
-    keyword = input("Search by category or description: ").strip().lower()
+    keyword = input("Search category or description: ").strip()
 
     if not keyword:
         print("Search keyword cannot be empty.")
         return
 
-    found = False
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    for expense in expenses:
-        if (
-            keyword in expense["category"].lower()
-            or keyword in expense["description"].lower()
-        ):
-            print(
-                f"ID: {expense['id']} | "
-                f"₹{expense['amount']:.2f} | "
-                f"{expense['category']} | "
-                f"{expense['description']} | "
-                f"{expense['date']}"
-            )
+        cursor.execute("""
+            SELECT id, amount, category, description, date, payment_method
+            FROM expenses
+            WHERE LOWER(category) LIKE LOWER(%s)
+               OR LOWER(description) LIKE LOWER(%s)
+            ORDER BY id;
+        """, (f"%{keyword}%", f"%{keyword}%"))
 
-            found = True
+        rows = cursor.fetchall()
 
-    if not found:
-        print("No matching expenses found.")
+        if not rows:
+            print("No matching expenses found.")
+        else:
+            for row in rows:
+                print(
+                    f"ID: {row[0]} | "
+                    f"₹{row[1]:.2f} | "
+                    f"{row[2]} | "
+                    f"{row[3]} | "
+                    f"{row[4]} | "
+                    f"{row[5]}"
+                )
+
+        cursor.close()
+        conn.close()
+
+    except psycopg2.Error as e:
+        print("Database error:", e)
 
 
 def expense_summary():
     print("\n--- Expense Summary ---")
 
-    if not expenses:
-        print("No expenses found.")
-        return
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    total = sum(expense["amount"] for expense in expenses)
+        cursor.execute("""
+            SELECT
+                COALESCE(SUM(amount), 0),
+                COUNT(*),
+                COALESCE(AVG(amount), 0),
+                COALESCE(MAX(amount), 0),
+                COALESCE(MIN(amount), 0)
+            FROM expenses;
+        """)
 
-    highest = max(
-        expenses,
-        key=lambda expense: expense["amount"]
-    )
+        total, count, average, highest, lowest = cursor.fetchone()
 
-    lowest = min(
-        expenses,
-        key=lambda expense: expense["amount"]
-    )
+        print(f"Total Expenses    : ₹{total:.2f}")
+        print(f"Number of Expenses: {count}")
+        print(f"Average Expense   : ₹{average:.2f}")
+        print(f"Highest Expense   : ₹{highest:.2f}")
+        print(f"Lowest Expense    : ₹{lowest:.2f}")
 
-    average = total / len(expenses)
+        cursor.close()
+        conn.close()
 
-    print(f"Total Expenses    : ₹{total:.2f}")
-    print(f"Number of Expenses: {len(expenses)}")
-    print(f"Average Expense   : ₹{average:.2f}")
-
-    print(
-        f"Highest Expense   : ₹{highest['amount']:.2f} "
-        f"({highest['description']})"
-    )
-
-    print(
-        f"Lowest Expense    : ₹{lowest['amount']:.2f} "
-        f"({lowest['description']})"
-    )
+    except psycopg2.Error as e:
+        print("Database error:", e)
 
 
 def main():
@@ -281,5 +328,5 @@ def main():
             print("Invalid choice. Please try again.")
 
 
-
-main()
+if __name__ == "__main__":
+    main()
